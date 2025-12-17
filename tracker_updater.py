@@ -1,6 +1,9 @@
 import requests
 import subprocess
 import argparse
+import sys
+
+sys.stdout = open('output_log.txt', 'w')
 
 
 host = ''
