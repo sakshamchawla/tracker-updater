@@ -3,8 +3,9 @@ import subprocess
 import argparse
 import urllib
 
-host = ''
+qbit_host = 'http://127.0.0.1:1234'
 login_data = {'username': 'admin', 'password': 'adminadmin'}
+trackers_url = 'https://raw.githubusercontent.com/ngosang/trackerslist/refs/heads/master/trackers_all.txt'
 
 def get_url(host, op):
     if op == 'login':
@@ -21,17 +22,16 @@ def make_post(url, body, cookies):
     return r.status_code
    
     
-def make_get(url, params):
-    r = requests.get(url, params=params)
-    print(r.status_code)
+def make_get(url):
+    r = requests.get(url)
+    return r.text
    
     
 def get_trackers():
-    with open('trackerslist/trackers_all.txt', 'r') as f:
-        trackers = f.read()
-        trackers = trackers.split("\n")
-        trackers = [t for t in trackers if t != None and t != '']        
-        return trackers
+    trackers = make_get(trackers_url) 
+    trackers = trackers.split("\n")
+    trackers = [t for t in trackers if t != None and t != '']      
+    return trackers
 
 
 def get_trackers_request(torrentId, url):
@@ -51,13 +51,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('torrentId', type=str)
     args = parser.parse_args()
-    if args.torrentId:
-        subprocess.run(['./git_updater.sh'], check=True)
-        sid = make_post(get_url(host, 'login'), login_data, None)
+    if args.torrentId:        
+        sid = make_post(get_url(qbit_host, 'login'), login_data, None)
         trackers = get_trackers()
         for tracker in trackers:
-            code = make_post(get_url(host, 'addtrack'), get_trackers_request(args.torrentId, tracker), get_cookies(sid))
-    
+            code = make_post(get_url(qbit_host, 'addtrack'), get_trackers_request(args.torrentId, tracker), get_cookies(sid))
+            print(code)
 
 if __name__ == '__main__':
     main()
